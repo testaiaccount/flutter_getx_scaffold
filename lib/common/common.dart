@@ -30,11 +30,13 @@ Future<WidgetsBinding> init({
   String? networkLog,
   int dioTimeOut = 10,
   List<Locale>? supportedLocales,
+  Locale? deviceLocale
 }) async {
   isDebugMode = isDebug;
   Logger.init(isDebugMode, logTag, networkLog);
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  await Get.putAsync(() => GlobalService().init(supportedLocales: supportedLocales));
+  await Get.putAsync(() => GlobalService()
+      .init(supportedLocales: supportedLocales, deviceLocale: deviceLocale));
   await Get.putAsync(() => HttpService().init(timeout: dioTimeOut));
   return widgetsBinding;
 }
