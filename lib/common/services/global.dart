@@ -42,13 +42,13 @@ class GlobalService extends GetxService with WidgetsBindingObserver {
   Future<GlobalService> init({
     List<Locale>? supportedLocales,
     LocaleChangeCallback? localeChangeCallback,
+    Locale? deviceLocale
   }) async {
     WidgetsBinding.instance.addObserver(this);
     eventBus = EventBus();
     sharedPreferences = await SharedPreferences.getInstance();
     this.localeChangeCallback = localeChangeCallback;
-    //初始化本地语言配置
-    _initLocale(supportedLocales);
+    _initLocale(supportedLocales, deviceLocale);
     //初始化主题配置
     _initTheme();
     return this;
@@ -139,12 +139,21 @@ class GlobalService extends GetxService with WidgetsBindingObserver {
   }
 
   // 初始化本地语言配置
-  void _initLocale(List<Locale>? supportedLocales) {
+  void _initLocale(List<Locale>? supportedLocales, Locale? deviceLocale) {
     if (supportedLocales == null) {
       return;
     }
     var langCode = sharedPreferences.getString(languageCodeKey) ?? '';
-    if (langCode.isEmpty) {
+    if (langCode.isEmpty && deviceLocale != null) {
+      //缓存如果为空，则按本地设备的语言匹配
+      var index = supportedLocales.indexWhere((element) {
+        return element.languageCode == deviceLocale.languageCode;
+      });
+      if (index < 0) {
+        return;
+      }
+      locale = supportedLocales[index];
+      localeChangeCallback?.call(locale);
       return;
     }
     var index = supportedLocales.indexWhere((element) {
